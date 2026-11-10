@@ -18,7 +18,9 @@
    - Create a folder called "images" next to this file in your GitHub repo.
    - Upload photos into it (e.g. images/banner-1.jpg, images/gallery-1.jpg).
    - List them in CONFIG.carouselImages and CONFIG.galleryImages below.
-   - Any image that is missing shows a soft placeholder, so nothing breaks.
+   - .jpg, .jpeg, .JPG and .png all work: "banner-1.jpeg" is found even if
+     the list below says "banner-1.jpg".
+   - Banner and gallery photos that don't exist are simply skipped.
 
 2) MEMORY WALL (moderated, via Google Forms + Google Sheets)
    a. Create a Google Form with three questions, in this order:
@@ -49,6 +51,20 @@
       Copy that link into CONFIG.memoriesCsvUrl.
 
    Approved memories appear on the site within about 5 minutes (Google's cache).
+
+3) RSVP (private, via a second Google Form)
+   a. Create a NEW Google Form with three questions, in this order:
+        "Your name"               (Short answer, required)
+        "Phone or email"          (Short answer, required)
+        "Will you attend?"        (Multiple choice) with exactly these two options:
+             Yes, I'll be there
+             Sorry, I can't make it
+   b. Get its formResponse address and entry IDs exactly as in step 2b
+      (for the multiple-choice question, pick any option in the pre-filled link).
+   c. Paste them into CONFIG.rsvpFormAction / rsvpEntryName / rsvpEntryContact /
+      rsvpEntryAttending. Responses land in the form's Responses tab / linked Sheet,
+      visible only to you. Nothing about RSVPs is shown publicly on the site.
+   d. Tribute details live in the RSVP section of the HTML (search "TRIBUTE DETAILS").
    Until CONFIG is filled in, the wall shows sample memories and the form
    runs in preview mode (nothing is sent).
 ============================================================================
@@ -147,6 +163,34 @@
     transition: background 0.25s, color 0.25s;
   }
   .banner-cta:hover { background: var(--gold); color: #fff; }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
+  .cta-row .banner-cta { margin-top: 0; }
+  .banner-cta.primary { background: var(--gold); color: #fff; }
+  .banner-cta.primary:hover { background: #9a7a48; border-color: #9a7a48; }
+
+  /* RSVP */
+  .rsvp { display: grid; grid-template-columns: 1fr 1.15fr; gap: 32px; align-items: start; max-width: 980px; margin: 0 auto; }
+  .event-card {
+    background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 34px; box-shadow: var(--shadow);
+  }
+  .event-card h3 { font-size: 1.7rem; margin-bottom: 18px; }
+  .event-row { display: flex; gap: 14px; padding: 14px 0; border-top: 1px solid var(--line); }
+  .event-row:first-of-type { border-top: none; padding-top: 0; }
+  .event-row .k { width: 70px; flex-shrink: 0; font-size: 0.75rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); padding-top: 3px; }
+  .event-row .v { font-size: 1.02rem; }
+  .event-row a { color: var(--ink); text-decoration-color: var(--gold-soft); text-underline-offset: 3px; }
+  .event-note { margin-top: 18px; font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 1.2rem; color: var(--ink-soft); }
+  .rsvp .memory-form { margin: 0; max-width: none; }
+  .choice { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 22px; }
+  .choice input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
+  .choice label {
+    margin: 0; text-transform: none; letter-spacing: 0; font-size: 0.98rem; color: var(--ink);
+    border: 1px solid var(--line); background: var(--cream); border-radius: 10px;
+    padding: 13px 14px; text-align: center; cursor: pointer; transition: all 0.2s;
+  }
+  .choice input:checked + label { border-color: var(--gold); background: #fff; box-shadow: inset 0 0 0 1px var(--gold); }
+  .choice input:focus-visible + label { outline: 2px solid var(--gold); outline-offset: 2px; }
 
   /* ---------- Carousel ---------- */
   .carousel {
@@ -374,6 +418,9 @@
     .about { grid-template-columns: 1fr; gap: 32px; }
     .about-photo { position: static; width: 100%; max-width: 280px; margin: 0 auto; }
     .row { grid-template-columns: 1fr; gap: 0; }
+    .cta-row { justify-content: center; }
+    .rsvp { grid-template-columns: 1fr; }
+    .event-card { padding: 24px; }
     .memory-form { padding: 24px; }
     .tabs { justify-content: flex-start; }
     .tab { padding: 18px 14px 16px; letter-spacing: 0.14em; }
@@ -395,7 +442,10 @@
       <div class="dates">19XX &nbsp;—&nbsp; 2026</div>
       <div class="divider"></div>
       <p class="tagline">"A line that captures who he was, a favourite saying, or words from the family."</p>
-      <button class="banner-cta" onclick="showTab('memories', true)">Share a Memory</button>
+      <div class="cta-row">
+        <button class="banner-cta primary" onclick="showTab('rsvp', true)">RSVP to the Tribute</button>
+        <button class="banner-cta" onclick="showTab('memories', true)">Share a Memory</button>
+      </div>
     </div>
 
     <div class="carousel" id="carousel" aria-roledescription="carousel" aria-label="Photos of Sukeerth">
@@ -413,7 +463,7 @@
     <button class="tab" role="tab" data-tab="about" aria-selected="true">About Sukeerth</button>
     <button class="tab" role="tab" data-tab="memories" aria-selected="false">Memories</button>
     <button class="tab" role="tab" data-tab="gallery" aria-selected="false">Gallery</button>
-    <button class="tab" role="tab" data-tab="section4" aria-selected="false">Section Four</button>
+    <button class="tab" role="tab" data-tab="rsvp" aria-selected="false">RSVP</button>
   </div>
 </nav>
 
@@ -476,14 +526,41 @@
     <div class="gallery" id="galleryGrid"></div>
   </section>
 
-  <!-- =================== SECTION FOUR (placeholder) =================== -->
-  <section class="panel" id="section4" role="tabpanel">
+  <!-- =================== RSVP =================== -->
+  <section class="panel" id="rsvp" role="tabpanel">
     <div class="section-head">
-      <h2>Section Four</h2>
-      <p>To be decided</p>
+      <h2>Tribute to Sukeerth</h2>
+      <p>Join us as we come together to remember and celebrate him</p>
     </div>
-    <div class="empty-panel">
-      This space is reserved for a fourth section. Rename the tab and fill this in when you're ready.
+
+    <div class="rsvp">
+      <!-- TRIBUTE DETAILS -->
+      <div class="event-card">
+        <h3>Details</h3>
+        <div class="event-row"><div class="k">Date</div><div class="v">Friday, 11 December 2026</div></div>
+        <div class="event-row"><div class="k">Time</div><div class="v">6:00 PM onwards</div></div>
+        <div class="event-row"><div class="k">Venue</div><div class="v">The Raft, Koramangala<br />Bengaluru<br /><a href="https://www.google.com/maps/search/?api=1&amp;query=The+Raft+Koramangala+Bengaluru" target="_blank" rel="noopener">Open in Google Maps</a></div></div>
+        <!-- Optional: add a contact row, e.g.
+        <div class="event-row"><div class="k">Contact</div><div class="v">Name, phone number</div></div> -->
+      </div>
+
+      <form class="memory-form" id="rsvpForm" novalidate>
+        <h3>RSVP</h3>
+        <p class="sub">Let the family know if you'll be there. Your details are only shared with the family.</p>
+        <label for="rName">Your name</label>
+        <input id="rName" name="name" type="text" required maxlength="80" autocomplete="name" />
+        <label for="rContact">Phone or email</label>
+        <input id="rContact" name="contact" type="text" required maxlength="120" autocomplete="email" />
+        <label>Will you attend?</label>
+        <div class="choice" role="radiogroup">
+          <input type="radio" id="rYes" name="attending" value="yes" />
+          <label for="rYes">Yes, I'll be there</label>
+          <input type="radio" id="rNo" name="attending" value="no" />
+          <label for="rNo">Sorry, I can't make it</label>
+        </div>
+        <button class="submit" type="submit">Send RSVP</button>
+        <p class="form-msg" id="rsvpMsg" role="status"></p>
+      </form>
     </div>
   </section>
 </main>
@@ -537,6 +614,15 @@ const CONFIG = {
   entryRelationship: "", // e.g. "entry.222"
   entryMemory: "",       // e.g. "entry.333"
   memoriesCsvUrl: "",    // published CSV link of the "Public" tab
+
+  // RSVP (see SETUP GUIDE step 3) — a separate Google Form
+  rsvpFormAction: "",     // e.g. "https://docs.google.com/forms/d/e/YYYY/formResponse"
+  rsvpEntryName: "",      // e.g. "entry.444"
+  rsvpEntryContact: "",   // e.g. "entry.555"
+  rsvpEntryAttending: "", // e.g. "entry.666"
+  // Must match the Google Form's multiple-choice options exactly
+  rsvpYesText: "Yes, I'll be there",
+  rsvpNoText: "Sorry, I can't make it",
 };
 
 /* Sample memories shown only until memoriesCsvUrl is set (for previewing the layout) */
@@ -557,33 +643,59 @@ function placeholder(label) {
   d.innerHTML = PH_ICON + "<span>" + label + "</span>";
   return d;
 }
-function imgOrPlaceholder(src, alt, label) {
+function candidates(src) {
+  const base = src.replace(/\.(jpe?g|png|webp)$/i, "");
+  return [...new Set([src, base + ".jpg", base + ".jpeg", base + ".JPG", base + ".JPEG", base + ".png", base + ".PNG", base + ".webp"])];
+}
+// Resolves to the first URL that loads, or null if none exist
+function findImage(src) {
+  const list = candidates(src);
+  return new Promise(resolve => {
+    let k = 0;
+    const tryNext = () => {
+      if (k >= list.length) return resolve(null);
+      const url = list[k++];
+      const img = new Image();
+      img.onload = () => resolve(url);
+      img.onerror = tryNext;
+      img.src = url;
+    };
+    tryNext();
+  });
+}
+function makeImg(url, alt) {
   const img = new Image();
-  img.alt = alt;
-  img.loading = "lazy";
-  img.src = src;
-  img.onerror = () => img.replaceWith(placeholder(label));
+  img.alt = alt; img.decoding = "async"; img.src = url;
   return img;
 }
 
 /* ==========================================================================
-   Carousel
+   Carousel (only photos that exist are shown)
    ========================================================================== */
-(function () {
+(async function () {
   const root = document.getElementById("carousel");
   const dotsEl = document.getElementById("dots");
-  const imgs = CONFIG.carouselImages;
+  const found = (await Promise.all(CONFIG.carouselImages.map(async im => ({ ...im, url: await findImage(im.src) }))))
+    .filter(im => im.url);
   let i = 0, timer;
+  const btns = root.querySelectorAll(".carousel-btn");
 
-  const slides = imgs.map((im, n) => {
+  if (!found.length) {
+    const s = document.createElement("div");
+    s.className = "slide active";
+    s.appendChild(placeholder("Banner photo"));
+    root.insertBefore(s, btns[0]);
+  }
+
+  const slides = found.map((im, n) => {
     const s = document.createElement("div");
     s.className = "slide" + (n === 0 ? " active" : "");
-    s.appendChild(imgOrPlaceholder(im.src, "Sukeerth, photo " + (n + 1), "Banner photo " + (n + 1)));
+    s.appendChild(makeImg(im.url, "Sukeerth, photo " + (n + 1)));
     if (im.caption) {
       const c = document.createElement("div");
       c.className = "caption"; c.textContent = im.caption; s.appendChild(c);
     }
-    root.insertBefore(s, root.querySelector(".carousel-btn"));
+    root.insertBefore(s, btns[0]);
     const d = document.createElement("button");
     d.className = "dot" + (n === 0 ? " active" : "");
     d.setAttribute("aria-label", "Go to photo " + (n + 1));
@@ -591,6 +703,12 @@ function imgOrPlaceholder(src, alt, label) {
     dotsEl.appendChild(d);
     return s;
   });
+
+  if (slides.length < 2) {           // nothing to rotate
+    btns.forEach(b => b.style.display = "none");
+    dotsEl.style.display = "none";
+    return;
+  }
 
   function go(n) {
     slides[i].classList.remove("active"); dotsEl.children[i].classList.remove("active");
@@ -603,7 +721,6 @@ function imgOrPlaceholder(src, alt, label) {
   root.addEventListener("mouseenter", () => clearInterval(timer));
   root.addEventListener("mouseleave", restart);
 
-  // swipe on mobile
   let x0 = null;
   root.addEventListener("touchstart", e => x0 = e.touches[0].clientX, { passive: true });
   root.addEventListener("touchend", e => {
@@ -612,11 +729,13 @@ function imgOrPlaceholder(src, alt, label) {
     if (Math.abs(dx) > 40) { go(i + (dx < 0 ? 1 : -1)); restart(); }
     x0 = null;
   });
-  if (slides.length > 1) restart();
+  restart();
 })();
 
 /* About portrait */
-document.getElementById("aboutPhoto").appendChild(imgOrPlaceholder(CONFIG.aboutPhoto, "Portrait of Sukeerth", "Portrait"));
+findImage(CONFIG.aboutPhoto).then(url => {
+  document.getElementById("aboutPhoto").appendChild(url ? makeImg(url, "Portrait of Sukeerth") : placeholder("Portrait"));
+});
 
 /* ==========================================================================
    Tabs
@@ -633,32 +752,37 @@ const initial = location.hash.slice(1);
 if (document.getElementById(initial)?.classList.contains("panel")) showTab(initial, false);
 
 /* ==========================================================================
-   Gallery + lightbox
+   Gallery + lightbox (only photos that exist are shown)
    ========================================================================== */
-(function () {
+(async function () {
   const grid = document.getElementById("galleryGrid");
   const lb = document.getElementById("lightbox");
   const media = document.getElementById("lbMedia");
   const cap = document.getElementById("lbCap");
-  const items = CONFIG.galleryImages;
+  const items = (await Promise.all(CONFIG.galleryImages.map(async im => ({ ...im, url: await findImage(im.src) }))))
+    .filter(im => im.url);
   let cur = 0;
+
+  if (!items.length) {
+    grid.outerHTML = '<div class="empty-panel">Photos coming soon.</div>';
+    return;
+  }
 
   items.forEach((im, n) => {
     const b = document.createElement("button");
     b.className = "g-item";
     b.setAttribute("aria-label", "Open photo " + (n + 1));
-    b.appendChild(imgOrPlaceholder(im.src, im.caption || "Photo of Sukeerth", "Photo " + (n + 1)));
+    const img = makeImg(im.url, im.caption || "Photo of Sukeerth");
+    img.loading = "lazy";
+    b.appendChild(img);
     b.onclick = () => open(n);
     grid.appendChild(b);
   });
 
   function render() {
     media.innerHTML = "";
-    const im = items[cur];
-    const el = imgOrPlaceholder(im.src, im.caption || "Photo of Sukeerth", "Photo " + (cur + 1));
-    el.loading = "eager";
-    media.appendChild(el);
-    cap.textContent = im.caption || "";
+    media.appendChild(makeImg(items[cur].url, items[cur].caption || "Photo of Sukeerth"));
+    cap.textContent = items[cur].caption || "";
   }
   function open(n) { cur = n; render(); lb.classList.add("open"); lb.setAttribute("aria-hidden", "false"); }
   function close() { lb.classList.remove("open"); lb.setAttribute("aria-hidden", "true"); }
@@ -768,6 +892,47 @@ document.getElementById("memoryForm").addEventListener("submit", async (e) => {
   }
   msg.classList.add("show");
   btn.disabled = false; btn.textContent = "Share Memory";
+});
+/* ==========================================================================
+   RSVP
+   ========================================================================== */
+document.getElementById("rsvpForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const msg = document.getElementById("rsvpMsg");
+  const btn = form.querySelector(".submit");
+  const name = form.name.value.trim(), contact = form.contact.value.trim();
+  const choice = form.querySelector('input[name="attending"]:checked');
+
+  if (!name || !contact || !choice) {
+    msg.textContent = "Please add your name, a phone number or email, and whether you'll attend.";
+    msg.classList.add("show");
+    return;
+  }
+  const attending = choice.value === "yes";
+  const thanks = attending
+    ? "Thank you, " + name + ". We look forward to seeing you on 11 December."
+    : "Thank you for letting us know, " + name + ". You'll be with us in spirit.";
+
+  btn.disabled = true; btn.textContent = "Sending…";
+  if (!CONFIG.rsvpFormAction) {
+    await new Promise(r => setTimeout(r, 600));
+    msg.textContent = "Preview mode: the RSVP form isn't connected yet, so this wasn't sent. Once connected, guests will see: \"" + thanks + "\"";
+  } else {
+    const data = new FormData();
+    data.append(CONFIG.rsvpEntryName, name);
+    data.append(CONFIG.rsvpEntryContact, contact);
+    data.append(CONFIG.rsvpEntryAttending, attending ? CONFIG.rsvpYesText : CONFIG.rsvpNoText);
+    try {
+      await fetch(CONFIG.rsvpFormAction, { method: "POST", mode: "no-cors", body: data });
+      msg.textContent = thanks;
+      form.reset();
+    } catch (err) {
+      msg.textContent = "Something went wrong. Please try again in a moment.";
+    }
+  }
+  msg.classList.add("show");
+  btn.disabled = false; btn.textContent = "Send RSVP";
 });
 </script>
 </body>
