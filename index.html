@@ -15,14 +15,14 @@
 ============================================================================
 
 1) PHOTOS
-   - Create a folder called "images" next to this file in your GitHub repo.
-   - Upload photos into it (e.g. images/banner-1.jpg, images/gallery-1.jpg).
-   - List them in CONFIG.carouselImages and CONFIG.galleryImages below.
-   - .jpg, .jpeg, .JPG and .png all work: "banner-1.jpeg" is found even if
-     the list below says "banner-1.jpg".
-   - Banner and gallery photos that don't exist are simply skipped.
+   - Put photos in the "images" folder and push. That's it: the page reads
+     the folder list from GitHub.
+   - Banner carousel: any photo whose name starts with "banner" (banner-1.jpg, banner-2.jpg ...).
+   - About section: "portrait.jpg" (or .jpeg/.png).
+   - Gallery: every photo in the folder except the portrait, sorted by name.
+   - Keep photos small (about 1600px wide) so the page loads quickly.
 
-2) MEMORY WALL (moderated, via Google Forms + Google Sheets)
+2) MEMORY WALL (via Google Forms + Google Sheets, posts appear automatically)
    a. Create a Google Form with three questions, in this order:
         "Your name"          (Short answer, required)
         "How you knew him"   (Short answer, optional)
@@ -34,23 +34,19 @@
         - Type "aaa", "bbb", "ccc" into the three fields > "Get link" > Copy.
         - The link looks like:
           https://docs.google.com/forms/d/e/XXXX/viewform?usp=pp_url&entry.111=aaa&entry.222=bbb&entry.333=ccc
-        - formAction = the same link up to "/viewform", with "/viewform" replaced by "/formResponse"
-          e.g. https://docs.google.com/forms/d/e/XXXX/formResponse
+        - formAction = that link up to "/viewform", with "/viewform" replaced by "/formResponse"
         - entry.111 is the name field, entry.222 the relationship, entry.333 the memory.
 
    c. Link the form to a Sheet: Form > Responses tab > "Link to Sheets".
-      In the "Form Responses 1" tab, add a header "Approved" in the first
-      empty column (column E). To approve a memory, type  yes  in that cell.
 
-   d. Add a second tab named "Public". In cell A1 paste:
-        =QUERY('Form Responses 1'!A:E, "select A, B, C, D where E = 'yes' order by A desc", 1)
-      This tab only ever contains approved memories.
+   d. Share the Sheet as "Anyone with the link: Viewer". CONFIG.memoriesCsvUrl
+      reads it as CSV via:
+      https://docs.google.com/spreadsheets/d/SHEET_ID/gviz/tq?tqx=out:csv&sheet=Form%20Responses%201
 
-   e. File > Share > Publish to web > choose the "Public" tab (NOT the whole
-      document) > format "Comma-separated values (.csv)" > Publish.
-      Copy that link into CONFIG.memoriesCsvUrl.
-
-   Approved memories appear on the site within about 5 minutes (Google's cache).
+   New memories appear on the site within a minute or two.
+   To remove a memory, delete its row in the Sheet.
+   Until CONFIG is filled in, the wall shows sample memories and the form
+   runs in preview mode (nothing is sent).
 
 3) RSVP (private, via a second Google Form)
    a. Create a NEW Google Form with three questions, in this order:
@@ -65,8 +61,6 @@
       rsvpEntryAttending. Responses land in the form's Responses tab / linked Sheet,
       visible only to you. Nothing about RSVPs is shown publicly on the site.
    d. Tribute details live in the RSVP section of the HTML (search "TRIBUTE DETAILS").
-   Until CONFIG is filled in, the wall shows sample memories and the form
-   runs in preview mode (nothing is sent).
 ============================================================================
 -->
 
@@ -169,11 +163,17 @@
   .banner-cta.primary:hover { background: #9a7a48; border-color: #9a7a48; }
 
   /* RSVP */
-  .rsvp { display: grid; grid-template-columns: 1fr 1.15fr; gap: 32px; align-items: start; max-width: 980px; margin: 0 auto; }
+  .rsvp { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: stretch; max-width: 980px; margin: 0 auto; }
   .event-card {
     background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
     padding: 34px; box-shadow: var(--shadow);
+    display: flex; flex-direction: column;
   }
+  .event-closing {
+    margin-top: auto; padding-top: 28px; text-align: center;
+    font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 1.3rem; color: var(--ink-soft);
+  }
+  .event-closing::before { content: ""; display: block; width: 48px; height: 1px; background: var(--gold); margin: 0 auto 20px; }
   .event-card h3 { font-size: 1.7rem; margin-bottom: 18px; }
   .event-row { display: flex; gap: 14px; padding: 14px 0; border-top: 1px solid var(--line); }
   .event-row:first-of-type { border-top: none; padding-top: 0; }
@@ -182,7 +182,7 @@
   .event-row a { color: var(--ink); text-decoration-color: var(--gold-soft); text-underline-offset: 3px; }
   .event-note { margin-top: 18px; font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 1.2rem; color: var(--ink-soft); }
   .rsvp .memory-form { margin: 0; max-width: none; }
-  .choice { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 22px; }
+  .choice { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 22px; }
   .choice input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
   .choice label {
     margin: 0; text-transform: none; letter-spacing: 0; font-size: 0.98rem; color: var(--ink);
@@ -420,6 +420,7 @@
     .row { grid-template-columns: 1fr; gap: 0; }
     .cta-row { justify-content: center; }
     .rsvp { grid-template-columns: 1fr; }
+    .choice { grid-template-columns: 1fr; }
     .event-card { padding: 24px; }
     .memory-form { padding: 24px; }
     .tabs { justify-content: flex-start; }
@@ -439,7 +440,7 @@
     <div class="banner-text">
       <div class="eyebrow">In Loving Memory</div>
       <h1 class="name">Sukeerth</h1>
-      <div class="dates">19XX &nbsp;—&nbsp; 2026</div>
+      <div class="dates">1996 &nbsp;—&nbsp; 2026</div>
       <div class="divider"></div>
       <p class="tagline">"A line that captures who he was, a favourite saying, or words from the family."</p>
       <div class="cta-row">
@@ -496,7 +497,7 @@
 
     <form class="memory-form" id="memoryForm" novalidate>
       <h3>Leave a memory</h3>
-      <p class="sub">Share a story, a moment, or a few words. Memories are reviewed by the family before they appear here.</p>
+      <p class="sub">Share a story, a moment, or a few words. Your memory will appear below for everyone who visits.</p>
       <div class="row">
         <div>
           <label for="mName">Your name</label>
@@ -504,7 +505,7 @@
         </div>
         <div>
           <label for="mRel">How you knew him</label>
-          <input id="mRel" name="relationship" type="text" maxlength="80" placeholder="e.g. College friend" />
+          <input id="mRel" name="relationship" type="text" required maxlength="80" placeholder="e.g. College friend" />
         </div>
       </div>
       <label for="mText">Your memory</label>
@@ -542,6 +543,7 @@
         <div class="event-row"><div class="k">Venue</div><div class="v">The Raft, Koramangala<br />Bengaluru<br /><a href="https://www.google.com/maps/search/?api=1&amp;query=The+Raft+Koramangala+Bengaluru" target="_blank" rel="noopener">Open in Google Maps</a></div></div>
         <!-- Optional: add a contact row, e.g.
         <div class="event-row"><div class="k">Contact</div><div class="v">Name, phone number</div></div> -->
+        <p class="event-closing">Come as you are, and bring a story to share.</p>
       </div>
 
       <form class="memory-form" id="rsvpForm" novalidate>
@@ -549,12 +551,14 @@
         <p class="sub">Let the family know if you'll be there. Your details are only shared with the family.</p>
         <label for="rName">Your name</label>
         <input id="rName" name="name" type="text" required maxlength="80" autocomplete="name" />
-        <label for="rContact">Phone or email</label>
-        <input id="rContact" name="contact" type="text" required maxlength="120" autocomplete="email" />
+        <label for="rContact">Phone number</label>
+        <input id="rContact" name="contact" type="tel" required maxlength="30" autocomplete="tel" />
         <label>Will you attend?</label>
         <div class="choice" role="radiogroup">
           <input type="radio" id="rYes" name="attending" value="yes" />
           <label for="rYes">Yes, I'll be there</label>
+          <input type="radio" id="rMaybe" name="attending" value="maybe" />
+          <label for="rMaybe">Maybe</label>
           <input type="radio" id="rNo" name="attending" value="no" />
           <label for="rNo">Sorry, I can't make it</label>
         </div>
@@ -584,6 +588,13 @@
    CONFIG — edit this block
    ========================================================================== */
 const CONFIG = {
+  // Photos are found automatically from the GitHub repo's "images" folder:
+  //   - banner carousel: every image whose name starts with "banner"
+  //   - gallery: every image in the folder (except "portrait")
+  // The lists below are only used if GitHub can't be reached.
+  githubRepo: "arindamkalra/heartoflife",
+  imagesFolder: "images",
+
   // Banner carousel (right side of the banner)
   carouselImages: [
     { src: "images/banner-1.jpg", caption: "" },
@@ -609,25 +620,24 @@ const CONFIG = {
   ],
 
   // Memory wall (see SETUP GUIDE at the top of this file)
-  formAction: "",        // e.g. "https://docs.google.com/forms/d/e/XXXX/formResponse"
-  entryName: "",         // e.g. "entry.111"
-  entryRelationship: "", // e.g. "entry.222"
-  entryMemory: "",       // e.g. "entry.333"
-  memoriesCsvUrl: "",    // published CSV link of the "Public" tab
+  formAction: "https://docs.google.com/forms/d/e/1FAIpQLSddATz5fJenP9HB9_iqKla_AAiQqz_53WQgqsbuynANlwG1Mg/formResponse",
+  entryName: "entry.61731731",
+  entryRelationship: "entry.1417448452",
+  entryMemory: "entry.607207946",
+  memoriesCsvUrl: "https://docs.google.com/spreadsheets/d/1BGX70QqTI1mx2u7ti6yTQ7exEEP3Ay4VLOoE7rQUYps/gviz/tq?tqx=out:csv&sheet=Form%20Responses%201",
 
   // RSVP (see SETUP GUIDE step 3) — a separate Google Form
-  rsvpFormAction: "",     // e.g. "https://docs.google.com/forms/d/e/YYYY/formResponse"
-  rsvpEntryName: "",      // e.g. "entry.444"
-  rsvpEntryContact: "",   // e.g. "entry.555"
-  rsvpEntryAttending: "", // e.g. "entry.666"
+  rsvpFormAction: "https://docs.google.com/forms/d/e/1FAIpQLSf1o6zfIfKWQR6_CE9dDMGa0ZSrF3DZsReyxpgbT_HJxtbpng/formResponse",
+  rsvpEntryName: "entry.1613439727",
+  rsvpEntryContact: "entry.230755771",   // "Phone number"
+  rsvpEntryAttending: "entry.605324899", // "Attending?"
   // Must match the Google Form's multiple-choice options exactly
-  rsvpYesText: "Yes, I'll be there",
-  rsvpNoText: "Sorry, I can't make it",
+  rsvpAnswers: { yes: "Yes", no: "No", maybe: "Maybe" },
 };
 
 /* Sample memories shown only until memoriesCsvUrl is set (for previewing the layout) */
 const SAMPLE_MEMORIES = [
-  { name: "Sample Name", rel: "School friend", text: "This is a sample memory so you can see how the wall looks. Real memories will appear here once they're approved." },
+  { name: "Sample Name", rel: "School friend", text: "This is a sample memory so you can see how the wall looks. Real memories will appear here once the form is connected." },
   { name: "Another Friend", rel: "Colleague", text: "Longer memories wrap neatly into cards like this one. People might share a story from a trip, a late-night conversation, or something small that stayed with them for years.\n\nLine breaks are kept, so paragraphs read naturally." },
   { name: "Family Member", rel: "Cousin", text: "A short note works beautifully too." },
   { name: "Friend", rel: "", text: "The relationship line is optional, so cards look fine without it." },
@@ -663,6 +673,30 @@ function findImage(src) {
     tryNext();
   });
 }
+// Lists image files in the repo's images folder via GitHub's public API (cached per visit)
+let _repoImages;
+function repoImages() {
+  if (_repoImages) return _repoImages;
+  _repoImages = (async () => {
+    if (!CONFIG.githubRepo) return null;
+    try {
+      const res = await fetch("https://api.github.com/repos/" + CONFIG.githubRepo + "/contents/" + CONFIG.imagesFolder);
+      if (!res.ok) return null;
+      const files = (await res.json())
+        .filter(f => f.type === "file" && /\.(jpe?g|png|webp|gif)$/i.test(f.name))
+        .map(f => f.name)
+        .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }));
+      return files.length ? files : null;
+    } catch (e) { return null; }
+  })();
+  return _repoImages;
+}
+async function resolveList(filter, fallback) {
+  const files = await repoImages();
+  if (files) return files.filter(filter).map(n => ({ src: CONFIG.imagesFolder + "/" + n, caption: "", url: CONFIG.imagesFolder + "/" + encodeURIComponent(n) }));
+  return (await Promise.all(fallback.map(async im => ({ ...im, url: await findImage(im.src) })))).filter(im => im.url);
+}
+
 function makeImg(url, alt) {
   const img = new Image();
   img.alt = alt; img.decoding = "async"; img.src = url;
@@ -675,8 +709,7 @@ function makeImg(url, alt) {
 (async function () {
   const root = document.getElementById("carousel");
   const dotsEl = document.getElementById("dots");
-  const found = (await Promise.all(CONFIG.carouselImages.map(async im => ({ ...im, url: await findImage(im.src) }))))
-    .filter(im => im.url);
+  const found = await resolveList(n => /^banner/i.test(n), CONFIG.carouselImages);
   let i = 0, timer;
   const btns = root.querySelectorAll(".carousel-btn");
 
@@ -759,8 +792,7 @@ if (document.getElementById(initial)?.classList.contains("panel")) showTab(initi
   const lb = document.getElementById("lightbox");
   const media = document.getElementById("lbMedia");
   const cap = document.getElementById("lbCap");
-  const items = (await Promise.all(CONFIG.galleryImages.map(async im => ({ ...im, url: await findImage(im.src) }))))
-    .filter(im => im.url);
+  const items = await resolveList(n => !/^portrait\./i.test(n), CONFIG.galleryImages);
   let cur = 0;
 
   if (!items.length) {
@@ -839,6 +871,10 @@ function renderWall(list) {
 async function loadMemories() {
   const status = document.getElementById("wallStatus");
   if (!CONFIG.memoriesCsvUrl) {
+    if (CONFIG.formAction) {          // form is live but the Sheet link isn't added yet
+      status.textContent = "Shared memories will appear here.";
+      return;
+    }
     status.textContent = "Preview: sample memories shown below. Real ones will appear once the Google Sheet is connected.";
     renderWall(SAMPLE_MEMORIES);
     return;
@@ -846,10 +882,14 @@ async function loadMemories() {
   try {
     const res = await fetch(CONFIG.memoriesCsvUrl + (CONFIG.memoriesCsvUrl.includes("?") ? "&" : "?") + "t=" + Date.now());
     const rows = parseCSV(await res.text()).filter(r => r.some(c => c.trim()));
-    // Columns in the "Public" tab: Timestamp, Name, Relationship, Memory
+    // Find columns by their header text, so question order doesn't matter
+    const head = (rows[0] || []).map(h => h.toLowerCase());
+    const col = re => head.findIndex(h => re.test(h));
+    const iName = col(/name/), iText = col(/memory/), iRel = col(/knew|relation/);
     const list = rows.slice(1)
-      .map(r => ({ name: (r[1] || "").trim(), rel: (r[2] || "").trim(), text: (r[3] || "").trim() }))
-      .filter(m => m.name && m.text);
+      .map(r => ({ name: (r[iName] || "").trim(), rel: iRel >= 0 ? (r[iRel] || "").trim() : "", text: (r[iText] || "").trim() }))
+      .filter(m => m.name && m.text)
+      .reverse();                    // newest first
     status.textContent = list.length ? "" : "Be the first to share a memory.";
     renderWall(list);
   } catch (e) {
@@ -865,8 +905,8 @@ document.getElementById("memoryForm").addEventListener("submit", async (e) => {
   const btn = form.querySelector(".submit");
   const name = form.name.value.trim(), rel = form.relationship.value.trim(), text = form.memory.value.trim();
 
-  if (!name || !text) {
-    msg.textContent = "Please add your name and a memory.";
+  if (!name || !rel || !text) {
+    msg.textContent = "Please add your name, how you knew him, and a memory.";
     msg.classList.add("show");
     return;
   }
@@ -876,7 +916,7 @@ document.getElementById("memoryForm").addEventListener("submit", async (e) => {
   if (!CONFIG.formAction) {
     // Preview mode: nothing is sent
     await new Promise(r => setTimeout(r, 600));
-    msg.textContent = "Preview mode: the form isn't connected yet, so this wasn't sent. Once connected, visitors will see: \"Thank you. Your memory has been received and will appear after the family reviews it.\"";
+    msg.textContent = "Preview mode: the form isn't connected yet, so this wasn't sent. Once connected, visitors will see: \"Thank you for sharing. Your memory will appear on this page in a few minutes.\"";
   } else {
     const data = new FormData();
     data.append(CONFIG.entryName, name);
@@ -884,7 +924,7 @@ document.getElementById("memoryForm").addEventListener("submit", async (e) => {
     data.append(CONFIG.entryMemory, text);
     try {
       await fetch(CONFIG.formAction, { method: "POST", mode: "no-cors", body: data });
-      msg.textContent = "Thank you. Your memory has been received and will appear after the family reviews it.";
+      msg.textContent = "Thank you for sharing. Your memory will appear on this page in a few minutes.";
       form.reset();
     } catch (err) {
       msg.textContent = "Something went wrong. Please try again in a moment.";
@@ -905,14 +945,16 @@ document.getElementById("rsvpForm").addEventListener("submit", async (e) => {
   const choice = form.querySelector('input[name="attending"]:checked');
 
   if (!name || !contact || !choice) {
-    msg.textContent = "Please add your name, a phone number or email, and whether you'll attend.";
+    msg.textContent = "Please add your name, a phone number, and whether you'll attend.";
     msg.classList.add("show");
     return;
   }
-  const attending = choice.value === "yes";
-  const thanks = attending
+  const answer = choice.value;
+  const thanks = answer === "yes"
     ? "Thank you, " + name + ". We look forward to seeing you on 11 December."
-    : "Thank you for letting us know, " + name + ". You'll be with us in spirit.";
+    : answer === "maybe"
+      ? "Thank you, " + name + ". We hope you can make it."
+      : "Thank you for letting us know, " + name + ". You'll be with us in spirit.";
 
   btn.disabled = true; btn.textContent = "Sending…";
   if (!CONFIG.rsvpFormAction) {
@@ -922,7 +964,7 @@ document.getElementById("rsvpForm").addEventListener("submit", async (e) => {
     const data = new FormData();
     data.append(CONFIG.rsvpEntryName, name);
     data.append(CONFIG.rsvpEntryContact, contact);
-    data.append(CONFIG.rsvpEntryAttending, attending ? CONFIG.rsvpYesText : CONFIG.rsvpNoText);
+    data.append(CONFIG.rsvpEntryAttending, CONFIG.rsvpAnswers[answer]);
     try {
       await fetch(CONFIG.rsvpFormAction, { method: "POST", mode: "no-cors", body: data });
       msg.textContent = thanks;
