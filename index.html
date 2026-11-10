@@ -285,13 +285,15 @@
   .carousel-btn.prev { left: 14px; }
   .carousel-btn.next { right: 14px; }
   .dots {
-    position: absolute; bottom: 14px; right: 18px; display: flex; gap: 7px; z-index: 2;
+    position: absolute; bottom: 6px; right: 10px; display: flex; gap: 0; z-index: 2;
   }
   .dot {
-    width: 8px; height: 8px; border-radius: 50%; border: none;
-    background: rgba(255,255,255,0.55); padding: 0;
+    width: 24px; height: 24px; border: none; padding: 0; background: none; position: relative;
   }
-  .dot.active { background: #fff; }
+  .dot::after {
+    content: ""; position: absolute; inset: 8px; border-radius: 50%; background: rgba(255,255,255,0.55);
+  }
+  .dot.active::after { background: #fff; }
 
   /* Placeholder used when an image is missing */
   .ph {
@@ -332,6 +334,7 @@
     transition: color 0.2s, border-color 0.2s;
   }
   .tab:hover { color: var(--ink); }
+  .tab-long { display: inline; }
   .tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--gold); font-weight: 400; }
 
   /* ---------- Sections ---------- */
@@ -509,9 +512,34 @@
     .mem-card { padding: 30px 22px 26px; }
     .mem-grid { grid-template-columns: 1fr; gap: 0; }
     .mem-foot .submit { width: 100%; }
-    .tabs { justify-content: flex-start; }
-    .tab { padding: 18px 14px 16px; letter-spacing: 0.14em; }
+    .tabs { justify-content: center; padding: 0 8px; gap: 0; }
+    .tab { padding: 17px 12px 15px; letter-spacing: 0.14em; }
     main { padding: 44px 18px 72px; }
+  }
+  /* Phones */
+  @media (max-width: 560px) {
+    .banner-inner { padding: 34px 18px 32px; gap: 26px; }
+    .name { font-size: 3rem; margin: 8px 0 4px; }
+    .dates { font-size: 1.15rem; }
+    .divider { margin: 16px auto; }
+    .tagline { font-size: 1.15rem; }
+    .cta-row { margin-top: 22px; gap: 10px; }
+    .banner-cta { padding: 12px 20px; font-size: 0.78rem; letter-spacing: 0.1em; }
+    .carousel { aspect-ratio: 4 / 3; outline-width: 5px; }
+    .tab-long { display: none; }
+    .tabs { justify-content: space-between; padding: 0 4px; }
+    .tab { flex: 1; padding: 16px 4px 14px; font-size: 0.74rem; letter-spacing: 0.12em; }
+    main { padding: 34px 16px 64px; }
+    .section-head { margin-bottom: 28px; }
+    .about-photo { max-width: 220px; }
+    .about-text p { font-size: 1.02rem; }
+    .event-kicker, .cal-month, .letter-label { font-size: 0.75rem; }
+    .cal-dow { font-size: 0.75rem; }
+    .gallery { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .g-item { border-radius: 6px; }
+    .lightbox { padding: 12px; }
+    .lightbox img { max-width: 100%; max-height: 80vh; }
+    .lb-prev, .lb-next { top: auto; bottom: 14px; transform: none; }
   }
   @media (prefers-reduced-motion: reduce) {
     .slide, .panel, .g-item img { transition: none; animation: none; }
@@ -547,7 +575,7 @@
 <!-- =================== TABS =================== -->
 <nav class="tabs-wrap" aria-label="Sections">
   <div class="tabs" role="tablist">
-    <button class="tab" role="tab" data-tab="about" aria-selected="true">About Sukeerth</button>
+    <button class="tab" role="tab" data-tab="about" aria-selected="true">About<span class="tab-long"> Sukeerth</span></button>
     <button class="tab" role="tab" data-tab="rsvp" aria-selected="false">RSVP</button>
     <button class="tab" role="tab" data-tab="memories" aria-selected="false">Memories</button>
     <button class="tab" role="tab" data-tab="gallery" aria-selected="false">Gallery</button>
@@ -936,7 +964,14 @@ function showTab(id, scroll) {
   history.replaceState(null, "", "#" + id);
   if (scroll) document.querySelector(".tabs-wrap").scrollIntoView({ behavior: "smooth" });
 }
-tabs.forEach(t => t.addEventListener("click", () => showTab(t.dataset.tab, false)));
+tabs.forEach(t => t.addEventListener("click", () => {
+  const bar = document.querySelector(".tabs-wrap");
+  const barTop = bar.getBoundingClientRect().top + window.scrollY;
+  const scrolledPast = window.scrollY > barTop + 2;
+  showTab(t.dataset.tab, false);
+  if (scrolledPast) window.scrollTo({ top: barTop, behavior: "smooth" });
+  t.scrollIntoView({ block: "nearest", inline: "center" });
+}));
 const initial = location.hash.slice(1);
 if (document.getElementById(initial)?.classList.contains("panel")) showTab(initial, false);
 
@@ -982,6 +1017,14 @@ if (document.getElementById(initial)?.classList.contains("panel")) showTab(initi
   lb.querySelector(".lb-prev").onclick = () => step(-1);
   lb.querySelector(".lb-next").onclick = () => step(1);
   lb.addEventListener("click", e => { if (e.target === lb) close(); });
+  let sx = null;
+  lb.addEventListener("touchstart", e => sx = e.touches[0].clientX, { passive: true });
+  lb.addEventListener("touchend", e => {
+    if (sx === null) return;
+    const dx = e.changedTouches[0].clientX - sx;
+    if (Math.abs(dx) > 40) step(dx < 0 ? 1 : -1);
+    sx = null;
+  });
   document.addEventListener("keydown", e => {
     if (!lb.classList.contains("open")) return;
     if (e.key === "Escape") close();
