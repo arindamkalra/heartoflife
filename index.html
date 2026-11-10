@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>In Loving Memory of Sukeerth</title>
+<meta name="description" content="A place to remember Sukeerth — his life, our memories, and the moments we shared." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+
+<!--
+============================================================================
+  SETUP GUIDE (read once, then edit the CONFIG block in the <script> below)
+============================================================================
+
+1) PHOTOS
+   - Create a folder called "images" next to this file in your GitHub repo.
+   - Upload photos into it (e.g. images/banner-1.jpg, images/gallery-1.jpg).
+   - List them in CONFIG.carouselImages and CONFIG.galleryImages below.
+   - Any image that is missing shows a soft placeholder, so nothing breaks.
+
+2) MEMORY WALL (moderated, via Google Forms + Google Sheets)
+   a. Create a Google Form with three questions, in this order:
+        "Your name"          (Short answer, required)
+        "How you knew him"   (Short answer, optional)
+        "Your memory"        (Paragraph, required)
+      In Settings, turn OFF "Collect email addresses".
+
+   b. Get the form's submit address and field IDs:
+        - Click the three dots (top right) > "Get pre-filled link".
+        - Type "aaa", "bbb", "ccc" into the three fields > "Get link" > Copy.
+        - The link looks like:
+          https://docs.google.com/forms/d/e/XXXX/viewform?usp=pp_url&entry.111=aaa&entry.222=bbb&entry.333=ccc
+        - formAction = the same link up to "/viewform", with "/viewform" replaced by "/formResponse"
+          e.g. https://docs.google.com/forms/d/e/XXXX/formResponse
+        - entry.111 is the name field, entry.222 the relationship, entry.333 the memory.
+
+   c. Link the form to a Sheet: Form > Responses tab > "Link to Sheets".
+      In the "Form Responses 1" tab, add a header "Approved" in the first
+      empty column (column E). To approve a memory, type  yes  in that cell.
+
+   d. Add a second tab named "Public". In cell A1 paste:
+        =QUERY('Form Responses 1'!A:E, "select A, B, C, D where E = 'yes' order by A desc", 1)
+      This tab only ever contains approved memories.
+
+   e. File > Share > Publish to web > choose the "Public" tab (NOT the whole
+      document) > format "Comma-separated values (.csv)" > Publish.
+      Copy that link into CONFIG.memoriesCsvUrl.
+
+   Approved memories appear on the site within about 5 minutes (Google's cache).
+   Until CONFIG is filled in, the wall shows sample memories and the form
+   runs in preview mode (nothing is sent).
+============================================================================
+-->
+
+<style>
+  :root {
+    --cream: #f8f3ea;
+    --cream-deep: #efe6d6;
+    --paper: #fffdf9;
+    --gold: #b08d57;
+    --gold-soft: #d9c4a0;
+    --ink: #3b3328;
+    --ink-soft: #6e6353;
+    --line: #e4d9c6;
+    --shadow: 0 10px 30px rgba(82, 64, 38, 0.10);
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: "Lato", system-ui, sans-serif;
+    font-weight: 300;
+    color: var(--ink);
+    background: var(--cream);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { font-family: "Cormorant Garamond", Georgia, serif; font-weight: 500; line-height: 1.2; }
+  img { display: block; max-width: 100%; }
+  button { font-family: inherit; cursor: pointer; }
+
+  /* ---------- Banner ---------- */
+  .banner {
+    background:
+      radial-gradient(ellipse at 15% 20%, rgba(217, 196, 160, 0.35), transparent 55%),
+      linear-gradient(180deg, var(--paper), var(--cream));
+    border-bottom: 1px solid var(--line);
+  }
+  .banner-inner {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 72px 32px 64px;
+    display: grid;
+    grid-template-columns: 1fr 1.1fr;
+    gap: 56px;
+    align-items: center;
+  }
+  .eyebrow {
+    font-size: 0.78rem;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 400;
+  }
+  .name {
+    font-size: clamp(3.2rem, 7vw, 5.4rem);
+    margin: 14px 0 10px;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+  }
+  .dates {
+    font-family: "Cormorant Garamond", serif;
+    font-size: 1.35rem;
+    color: var(--ink-soft);
+    letter-spacing: 0.08em;
+  }
+  .divider {
+    width: 72px; height: 1px; background: var(--gold); margin: 28px 0;
+    position: relative;
+  }
+  .divider::after {
+    content: ""; position: absolute; left: 50%; top: 50%;
+    width: 7px; height: 7px; background: var(--cream);
+    border: 1px solid var(--gold); transform: translate(-50%, -50%) rotate(45deg);
+  }
+  .tagline {
+    font-family: "Cormorant Garamond", serif;
+    font-style: italic;
+    font-size: 1.45rem;
+    color: var(--ink-soft);
+    max-width: 440px;
+  }
+  .banner-cta {
+    display: inline-block;
+    margin-top: 34px;
+    padding: 12px 26px;
+    border: 1px solid var(--gold);
+    border-radius: 999px;
+    color: var(--ink);
+    background: transparent;
+    font-size: 0.85rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: background 0.25s, color 0.25s;
+  }
+  .banner-cta:hover { background: var(--gold); color: #fff; }
+
+  /* ---------- Carousel ---------- */
+  .carousel {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    max-height: 560px;
+    width: 100%;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    background: var(--cream-deep);
+    outline: 8px solid var(--paper);
+    outline-offset: 0;
+  }
+  .slide {
+    position: absolute; inset: 0;
+    opacity: 0;
+    transition: opacity 1.2s ease;
+  }
+  .slide.active { opacity: 1; }
+  .slide img { width: 100%; height: 100%; object-fit: cover; }
+  .slide .caption {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    padding: 40px 22px 18px;
+    background: linear-gradient(transparent, rgba(40, 30, 18, 0.55));
+    color: #fff;
+    font-family: "Cormorant Garamond", serif;
+    font-style: italic;
+    font-size: 1.1rem;
+  }
+  .carousel-btn {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 42px; height: 42px; border-radius: 50%;
+    border: none; background: rgba(255, 253, 249, 0.85);
+    color: var(--ink); font-size: 1.3rem; line-height: 1;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    opacity: 0; transition: opacity 0.3s;
+    z-index: 2;
+  }
+  .carousel:hover .carousel-btn, .carousel-btn:focus-visible { opacity: 1; }
+  .carousel-btn.prev { left: 14px; }
+  .carousel-btn.next { right: 14px; }
+  .dots {
+    position: absolute; bottom: 14px; right: 18px; display: flex; gap: 7px; z-index: 2;
+  }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%; border: none;
+    background: rgba(255,255,255,0.55); padding: 0;
+  }
+  .dot.active { background: #fff; }
+
+  /* Placeholder used when an image is missing */
+  .ph {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px;
+    background:
+      linear-gradient(135deg, #efe4d0, #e5d5bb 50%, #f1e8d8);
+    color: var(--gold);
+    font-family: "Cormorant Garamond", serif;
+    font-size: 1.05rem;
+    letter-spacing: 0.06em;
+    text-align: center;
+  }
+  .ph svg { width: 34px; height: 34px; opacity: 0.7; }
+
+  /* ---------- Tabs ---------- */
+  .tabs-wrap {
+    position: sticky; top: 0; z-index: 20;
+    background: rgba(248, 243, 234, 0.94);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+  .tabs {
+    max-width: 1180px; margin: 0 auto; padding: 0 24px;
+    display: flex; justify-content: center; gap: 8px;
+    overflow-x: auto; scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    background: none; border: none;
+    padding: 20px 22px 18px;
+    font-size: 0.82rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .tab:hover { color: var(--ink); }
+  .tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--gold); font-weight: 400; }
+
+  /* ---------- Sections ---------- */
+  main { max-width: 1080px; margin: 0 auto; padding: 64px 28px 96px; }
+  .panel { display: none; animation: fade 0.5s ease; }
+  .panel.active { display: block; }
+  @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  .section-head { text-align: center; margin-bottom: 44px; }
+  .section-head h2 { font-size: clamp(2.2rem, 4vw, 3rem); }
+  .section-head p { color: var(--ink-soft); margin-top: 8px; }
+
+  /* About */
+  .about {
+    display: grid; grid-template-columns: 300px 1fr; gap: 56px; align-items: start;
+  }
+  .about-photo {
+    aspect-ratio: 3 / 4; border-radius: var(--radius); overflow: hidden;
+    box-shadow: var(--shadow); outline: 6px solid var(--paper);
+    position: sticky; top: 100px;
+  }
+  .about-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .about-text p { margin-bottom: 1.3em; font-size: 1.08rem; }
+  .about-text p:first-child::first-letter {
+    font-family: "Cormorant Garamond", serif;
+    float: left; font-size: 4.2rem; line-height: 0.85;
+    padding: 6px 10px 0 0; color: var(--gold);
+  }
+  .quote {
+    margin: 36px 0 0; padding: 26px 30px;
+    border-left: 2px solid var(--gold);
+    background: var(--paper); border-radius: 0 var(--radius) var(--radius) 0;
+    font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 1.35rem;
+    color: var(--ink-soft);
+  }
+  .placeholder-note {
+    display: inline-block; font-size: 0.75rem; letter-spacing: 0.08em;
+    background: #f3e7cf; color: #8a6a35; padding: 3px 10px; border-radius: 999px; margin-bottom: 18px;
+  }
+
+  /* Memories */
+  .memory-form {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 34px;
+    box-shadow: var(--shadow);
+    max-width: 720px; margin: 0 auto 64px;
+  }
+  .memory-form h3 { font-size: 1.7rem; margin-bottom: 4px; }
+  .memory-form .sub { color: var(--ink-soft); font-size: 0.95rem; margin-bottom: 24px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  label { display: block; font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 6px; }
+  input, textarea {
+    width: 100%; padding: 12px 14px; margin-bottom: 18px;
+    border: 1px solid var(--line); border-radius: 10px;
+    background: var(--cream); color: var(--ink);
+    font: inherit; font-weight: 400; font-size: 1rem;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  input:focus, textarea:focus { outline: none; border-color: var(--gold); background: #fff; }
+  textarea { min-height: 150px; resize: vertical; line-height: 1.6; }
+  .submit {
+    border: none; background: var(--gold); color: #fff;
+    padding: 13px 30px; border-radius: 999px;
+    font-size: 0.85rem; letter-spacing: 0.14em; text-transform: uppercase;
+    transition: background 0.2s;
+  }
+  .submit:hover { background: #9a7a48; }
+  .submit:disabled { opacity: 0.6; cursor: default; }
+  .form-msg { margin-top: 16px; font-size: 0.95rem; color: var(--ink-soft); display: none; }
+  .form-msg.show { display: block; }
+
+  .wall { columns: 3 300px; column-gap: 22px; }
+  .memory {
+    break-inside: avoid; margin-bottom: 22px;
+    background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 26px 26px 22px; position: relative;
+  }
+  .memory::before {
+    content: "\201C"; position: absolute; top: 4px; left: 18px;
+    font-family: "Cormorant Garamond", serif; font-size: 3.6rem; color: var(--gold-soft); line-height: 1;
+  }
+  .memory p { margin-top: 22px; white-space: pre-line; font-size: 1rem; }
+  .memory .by { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .memory .who { font-family: "Cormorant Garamond", serif; font-size: 1.2rem; font-weight: 600; }
+  .memory .rel { font-size: 0.82rem; color: var(--ink-soft); }
+  .wall-status { text-align: center; color: var(--ink-soft); margin: 10px 0 30px; font-size: 0.95rem; }
+
+  /* Gallery */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+  .g-item {
+    aspect-ratio: 1; border-radius: 12px; overflow: hidden; border: none; padding: 0;
+    background: var(--cream-deep); position: relative;
+  }
+  .g-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
+  .g-item:hover img { transform: scale(1.04); }
+
+  .lightbox {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(30, 24, 16, 0.92);
+    display: none; align-items: center; justify-content: center; flex-direction: column;
+    padding: 40px;
+  }
+  .lightbox.open { display: flex; }
+  .lightbox img, .lightbox .ph { max-width: 90vw; max-height: 78vh; border-radius: 8px; }
+  .lightbox .ph { width: 60vw; height: 60vh; }
+  .lightbox .lb-cap { color: #eee3cf; margin-top: 16px; font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 1.15rem; }
+  .lb-btn { position: absolute; background: none; border: none; color: #f3e9d6; font-size: 2.2rem; padding: 12px; }
+  .lb-close { top: 16px; right: 22px; }
+  .lb-prev { left: 16px; top: 50%; transform: translateY(-50%); }
+  .lb-next { right: 16px; top: 50%; transform: translateY(-50%); }
+
+  /* Placeholder tab */
+  .empty-panel {
+    max-width: 620px; margin: 0 auto; text-align: center;
+    padding: 64px 32px; border: 1px dashed var(--gold-soft); border-radius: var(--radius); background: var(--paper);
+    color: var(--ink-soft);
+  }
+
+  /* Footer */
+  footer {
+    text-align: center; padding: 48px 24px 56px; border-top: 1px solid var(--line);
+    color: var(--ink-soft); font-size: 0.9rem;
+  }
+  footer .f-name { font-family: "Cormorant Garamond", serif; font-size: 1.5rem; color: var(--ink); margin-bottom: 4px; }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 860px) {
+    .banner-inner { grid-template-columns: 1fr; padding: 48px 22px 44px; gap: 36px; text-align: center; }
+    .divider { margin: 24px auto; }
+    .tagline { margin: 0 auto; }
+    .carousel { aspect-ratio: 4 / 4.4; max-height: 480px; }
+    .carousel-btn { opacity: 1; }
+    .about { grid-template-columns: 1fr; gap: 32px; }
+    .about-photo { position: static; width: 100%; max-width: 280px; margin: 0 auto; }
+    .row { grid-template-columns: 1fr; gap: 0; }
+    .memory-form { padding: 24px; }
+    .tabs { justify-content: flex-start; }
+    .tab { padding: 18px 14px 16px; letter-spacing: 0.14em; }
+    main { padding: 44px 18px 72px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .slide, .panel, .g-item img { transition: none; animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- =================== BANNER =================== -->
+<header class="banner">
+  <div class="banner-inner">
+    <div class="banner-text">
+      <div class="eyebrow">In Loving Memory</div>
+      <h1 class="name">Sukeerth</h1>
+      <div class="dates">19XX &nbsp;—&nbsp; 2026</div>
+      <div class="divider"></div>
+      <p class="tagline">"A line that captures who he was, a favourite saying, or words from the family."</p>
+      <button class="banner-cta" onclick="showTab('memories', true)">Share a Memory</button>
+    </div>
+
+    <div class="carousel" id="carousel" aria-roledescription="carousel" aria-label="Photos of Sukeerth">
+      <!-- slides are generated from CONFIG.carouselImages -->
+      <button class="carousel-btn prev" aria-label="Previous photo">&#8249;</button>
+      <button class="carousel-btn next" aria-label="Next photo">&#8250;</button>
+      <div class="dots" id="dots"></div>
+    </div>
+  </div>
+</header>
+
+<!-- =================== TABS =================== -->
+<nav class="tabs-wrap" aria-label="Sections">
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" data-tab="about" aria-selected="true">About Sukeerth</button>
+    <button class="tab" role="tab" data-tab="memories" aria-selected="false">Memories</button>
+    <button class="tab" role="tab" data-tab="gallery" aria-selected="false">Gallery</button>
+    <button class="tab" role="tab" data-tab="section4" aria-selected="false">Section Four</button>
+  </div>
+</nav>
+
+<main>
+  <!-- =================== ABOUT =================== -->
+  <section class="panel active" id="about" role="tabpanel">
+    <div class="section-head">
+      <h2>Remembering Sukeerth</h2>
+      <p>Son, brother, friend</p>
+    </div>
+    <div class="about">
+      <div class="about-photo" id="aboutPhoto"></div>
+      <div class="about-text">
+        <span class="placeholder-note">Placeholder text — replace with your words</span>
+        <p>Sukeerth was born in [city] and grew up surrounded by [family, friends, the things that shaped him]. This opening paragraph can introduce who he was: where he came from, and the warmth he brought to every room he walked into.</p>
+        <p>Write here about what he loved: his work, his passions, the music he played on repeat, the places he wanted to see, the small habits everyone who knew him will recognise instantly.</p>
+        <p>This paragraph can hold the people closest to him: his family, his friends, the circles he belonged to, and the ways he showed up for them.</p>
+        <p>Close with what he leaves behind: the lessons, the laughter, and the way he will continue to live on in all of us.</p>
+        <blockquote class="quote">"A favourite quote, a line he often said, or a few words from the family can go here."</blockquote>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================== MEMORIES =================== -->
+  <section class="panel" id="memories" role="tabpanel">
+    <div class="section-head">
+      <h2>Memories of Sukeerth</h2>
+      <p>Stories, moments and words from the people who knew and loved him</p>
+    </div>
+
+    <form class="memory-form" id="memoryForm" novalidate>
+      <h3>Leave a memory</h3>
+      <p class="sub">Share a story, a moment, or a few words. Memories are reviewed by the family before they appear here.</p>
+      <div class="row">
+        <div>
+          <label for="mName">Your name</label>
+          <input id="mName" name="name" type="text" required maxlength="80" />
+        </div>
+        <div>
+          <label for="mRel">How you knew him</label>
+          <input id="mRel" name="relationship" type="text" maxlength="80" placeholder="e.g. College friend" />
+        </div>
+      </div>
+      <label for="mText">Your memory</label>
+      <textarea id="mText" name="memory" required maxlength="3000"></textarea>
+      <button class="submit" type="submit">Share Memory</button>
+      <p class="form-msg" id="formMsg" role="status"></p>
+    </form>
+
+    <p class="wall-status" id="wallStatus"></p>
+    <div class="wall" id="wall"></div>
+  </section>
+
+  <!-- =================== GALLERY =================== -->
+  <section class="panel" id="gallery" role="tabpanel">
+    <div class="section-head">
+      <h2>Gallery</h2>
+      <p>Moments we hold close</p>
+    </div>
+    <div class="gallery" id="galleryGrid"></div>
+  </section>
+
+  <!-- =================== SECTION FOUR (placeholder) =================== -->
+  <section class="panel" id="section4" role="tabpanel">
+    <div class="section-head">
+      <h2>Section Four</h2>
+      <p>To be decided</p>
+    </div>
+    <div class="empty-panel">
+      This space is reserved for a fourth section. Rename the tab and fill this in when you're ready.
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="f-name">Sukeerth</div>
+  <div>Forever in our hearts</div>
+</footer>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" aria-hidden="true">
+  <button class="lb-btn lb-close" aria-label="Close">&times;</button>
+  <button class="lb-btn lb-prev" aria-label="Previous">&#8249;</button>
+  <div id="lbMedia"></div>
+  <div class="lb-cap" id="lbCap"></div>
+  <button class="lb-btn lb-next" aria-label="Next">&#8250;</button>
+</div>
+
+<script>
+/* ==========================================================================
+   CONFIG — edit this block
+   ========================================================================== */
+const CONFIG = {
+  // Banner carousel (right side of the banner)
+  carouselImages: [
+    { src: "images/banner-1.jpg", caption: "" },
+    { src: "images/banner-2.jpg", caption: "" },
+    { src: "images/banner-3.jpg", caption: "" },
+    { src: "images/banner-4.jpg", caption: "" },
+  ],
+  carouselSeconds: 5,
+
+  // Portrait next to the About text
+  aboutPhoto: "images/portrait.jpg",
+
+  // Gallery tab
+  galleryImages: [
+    { src: "images/gallery-1.jpg", caption: "" },
+    { src: "images/gallery-2.jpg", caption: "" },
+    { src: "images/gallery-3.jpg", caption: "" },
+    { src: "images/gallery-4.jpg", caption: "" },
+    { src: "images/gallery-5.jpg", caption: "" },
+    { src: "images/gallery-6.jpg", caption: "" },
+    { src: "images/gallery-7.jpg", caption: "" },
+    { src: "images/gallery-8.jpg", caption: "" },
+  ],
+
+  // Memory wall (see SETUP GUIDE at the top of this file)
+  formAction: "",        // e.g. "https://docs.google.com/forms/d/e/XXXX/formResponse"
+  entryName: "",         // e.g. "entry.111"
+  entryRelationship: "", // e.g. "entry.222"
+  entryMemory: "",       // e.g. "entry.333"
+  memoriesCsvUrl: "",    // published CSV link of the "Public" tab
+};
+
+/* Sample memories shown only until memoriesCsvUrl is set (for previewing the layout) */
+const SAMPLE_MEMORIES = [
+  { name: "Sample Name", rel: "School friend", text: "This is a sample memory so you can see how the wall looks. Real memories will appear here once they're approved." },
+  { name: "Another Friend", rel: "Colleague", text: "Longer memories wrap neatly into cards like this one. People might share a story from a trip, a late-night conversation, or something small that stayed with them for years.\n\nLine breaks are kept, so paragraphs read naturally." },
+  { name: "Family Member", rel: "Cousin", text: "A short note works beautifully too." },
+  { name: "Friend", rel: "", text: "The relationship line is optional, so cards look fine without it." },
+];
+
+/* ==========================================================================
+   Helpers
+   ========================================================================== */
+const PH_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-8 8"/></svg>';
+function placeholder(label) {
+  const d = document.createElement("div");
+  d.className = "ph";
+  d.innerHTML = PH_ICON + "<span>" + label + "</span>";
+  return d;
+}
+function imgOrPlaceholder(src, alt, label) {
+  const img = new Image();
+  img.alt = alt;
+  img.loading = "lazy";
+  img.src = src;
+  img.onerror = () => img.replaceWith(placeholder(label));
+  return img;
+}
+
+/* ==========================================================================
+   Carousel
+   ========================================================================== */
+(function () {
+  const root = document.getElementById("carousel");
+  const dotsEl = document.getElementById("dots");
+  const imgs = CONFIG.carouselImages;
+  let i = 0, timer;
+
+  const slides = imgs.map((im, n) => {
+    const s = document.createElement("div");
+    s.className = "slide" + (n === 0 ? " active" : "");
+    s.appendChild(imgOrPlaceholder(im.src, "Sukeerth, photo " + (n + 1), "Banner photo " + (n + 1)));
+    if (im.caption) {
+      const c = document.createElement("div");
+      c.className = "caption"; c.textContent = im.caption; s.appendChild(c);
+    }
+    root.insertBefore(s, root.querySelector(".carousel-btn"));
+    const d = document.createElement("button");
+    d.className = "dot" + (n === 0 ? " active" : "");
+    d.setAttribute("aria-label", "Go to photo " + (n + 1));
+    d.onclick = () => { go(n); restart(); };
+    dotsEl.appendChild(d);
+    return s;
+  });
+
+  function go(n) {
+    slides[i].classList.remove("active"); dotsEl.children[i].classList.remove("active");
+    i = (n + slides.length) % slides.length;
+    slides[i].classList.add("active"); dotsEl.children[i].classList.add("active");
+  }
+  function restart() { clearInterval(timer); timer = setInterval(() => go(i + 1), CONFIG.carouselSeconds * 1000); }
+  root.querySelector(".prev").onclick = () => { go(i - 1); restart(); };
+  root.querySelector(".next").onclick = () => { go(i + 1); restart(); };
+  root.addEventListener("mouseenter", () => clearInterval(timer));
+  root.addEventListener("mouseleave", restart);
+
+  // swipe on mobile
+  let x0 = null;
+  root.addEventListener("touchstart", e => x0 = e.touches[0].clientX, { passive: true });
+  root.addEventListener("touchend", e => {
+    if (x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0;
+    if (Math.abs(dx) > 40) { go(i + (dx < 0 ? 1 : -1)); restart(); }
+    x0 = null;
+  });
+  if (slides.length > 1) restart();
+})();
+
+/* About portrait */
+document.getElementById("aboutPhoto").appendChild(imgOrPlaceholder(CONFIG.aboutPhoto, "Portrait of Sukeerth", "Portrait"));
+
+/* ==========================================================================
+   Tabs
+   ========================================================================== */
+const tabs = document.querySelectorAll(".tab");
+function showTab(id, scroll) {
+  tabs.forEach(t => t.setAttribute("aria-selected", t.dataset.tab === id));
+  document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === id));
+  history.replaceState(null, "", "#" + id);
+  if (scroll) document.querySelector(".tabs-wrap").scrollIntoView({ behavior: "smooth" });
+}
+tabs.forEach(t => t.addEventListener("click", () => showTab(t.dataset.tab, false)));
+const initial = location.hash.slice(1);
+if (document.getElementById(initial)?.classList.contains("panel")) showTab(initial, false);
+
+/* ==========================================================================
+   Gallery + lightbox
+   ========================================================================== */
+(function () {
+  const grid = document.getElementById("galleryGrid");
+  const lb = document.getElementById("lightbox");
+  const media = document.getElementById("lbMedia");
+  const cap = document.getElementById("lbCap");
+  const items = CONFIG.galleryImages;
+  let cur = 0;
+
+  items.forEach((im, n) => {
+    const b = document.createElement("button");
+    b.className = "g-item";
+    b.setAttribute("aria-label", "Open photo " + (n + 1));
+    b.appendChild(imgOrPlaceholder(im.src, im.caption || "Photo of Sukeerth", "Photo " + (n + 1)));
+    b.onclick = () => open(n);
+    grid.appendChild(b);
+  });
+
+  function render() {
+    media.innerHTML = "";
+    const im = items[cur];
+    const el = imgOrPlaceholder(im.src, im.caption || "Photo of Sukeerth", "Photo " + (cur + 1));
+    el.loading = "eager";
+    media.appendChild(el);
+    cap.textContent = im.caption || "";
+  }
+  function open(n) { cur = n; render(); lb.classList.add("open"); lb.setAttribute("aria-hidden", "false"); }
+  function close() { lb.classList.remove("open"); lb.setAttribute("aria-hidden", "true"); }
+  function step(d) { cur = (cur + d + items.length) % items.length; render(); }
+
+  lb.querySelector(".lb-close").onclick = close;
+  lb.querySelector(".lb-prev").onclick = () => step(-1);
+  lb.querySelector(".lb-next").onclick = () => step(1);
+  lb.addEventListener("click", e => { if (e.target === lb) close(); });
+  document.addEventListener("keydown", e => {
+    if (!lb.classList.contains("open")) return;
+    if (e.key === "Escape") close();
+    if (e.key === "ArrowLeft") step(-1);
+    if (e.key === "ArrowRight") step(1);
+  });
+})();
+
+/* ==========================================================================
+   Memory wall
+   ========================================================================== */
+function parseCSV(text) {
+  const rows = []; let row = [], field = "", q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) {
+      if (c === '"' && text[i + 1] === '"') { field += '"'; i++; }
+      else if (c === '"') q = false;
+      else field += c;
+    } else if (c === '"') q = true;
+    else if (c === ",") { row.push(field); field = ""; }
+    else if (c === "\n") { row.push(field); rows.push(row); row = []; field = ""; }
+    else if (c !== "\r") field += c;
+  }
+  if (field || row.length) { row.push(field); rows.push(row); }
+  return rows;
+}
+
+function renderWall(list) {
+  const wall = document.getElementById("wall");
+  wall.innerHTML = "";
+  list.forEach(m => {
+    const card = document.createElement("article");
+    card.className = "memory";
+    const p = document.createElement("p"); p.textContent = m.text;
+    const by = document.createElement("div"); by.className = "by";
+    const who = document.createElement("div"); who.className = "who"; who.textContent = m.name;
+    by.appendChild(who);
+    if (m.rel) { const r = document.createElement("div"); r.className = "rel"; r.textContent = m.rel; by.appendChild(r); }
+    card.append(p, by);
+    wall.appendChild(card);
+  });
+}
+
+async function loadMemories() {
+  const status = document.getElementById("wallStatus");
+  if (!CONFIG.memoriesCsvUrl) {
+    status.textContent = "Preview: sample memories shown below. Real ones will appear once the Google Sheet is connected.";
+    renderWall(SAMPLE_MEMORIES);
+    return;
+  }
+  try {
+    const res = await fetch(CONFIG.memoriesCsvUrl + (CONFIG.memoriesCsvUrl.includes("?") ? "&" : "?") + "t=" + Date.now());
+    const rows = parseCSV(await res.text()).filter(r => r.some(c => c.trim()));
+    // Columns in the "Public" tab: Timestamp, Name, Relationship, Memory
+    const list = rows.slice(1)
+      .map(r => ({ name: (r[1] || "").trim(), rel: (r[2] || "").trim(), text: (r[3] || "").trim() }))
+      .filter(m => m.name && m.text);
+    status.textContent = list.length ? "" : "Be the first to share a memory.";
+    renderWall(list);
+  } catch (e) {
+    status.textContent = "Memories couldn't be loaded right now. Please try again later.";
+  }
+}
+loadMemories();
+
+document.getElementById("memoryForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const msg = document.getElementById("formMsg");
+  const btn = form.querySelector(".submit");
+  const name = form.name.value.trim(), rel = form.relationship.value.trim(), text = form.memory.value.trim();
+
+  if (!name || !text) {
+    msg.textContent = "Please add your name and a memory.";
+    msg.classList.add("show");
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = "Sending…";
+
+  if (!CONFIG.formAction) {
+    // Preview mode: nothing is sent
+    await new Promise(r => setTimeout(r, 600));
+    msg.textContent = "Preview mode: the form isn't connected yet, so this wasn't sent. Once connected, visitors will see: \"Thank you. Your memory has been received and will appear after the family reviews it.\"";
+  } else {
+    const data = new FormData();
+    data.append(CONFIG.entryName, name);
+    if (CONFIG.entryRelationship) data.append(CONFIG.entryRelationship, rel);
+    data.append(CONFIG.entryMemory, text);
+    try {
+      await fetch(CONFIG.formAction, { method: "POST", mode: "no-cors", body: data });
+      msg.textContent = "Thank you. Your memory has been received and will appear after the family reviews it.";
+      form.reset();
+    } catch (err) {
+      msg.textContent = "Something went wrong. Please try again in a moment.";
+    }
+  }
+  msg.classList.add("show");
+  btn.disabled = false; btn.textContent = "Share Memory";
+});
+</script>
+</body>
+</html>
