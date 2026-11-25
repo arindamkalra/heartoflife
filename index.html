@@ -1229,8 +1229,8 @@ async function rsvpIsFull() {
 }
 function closeRsvp() {
   document.getElementById("rsvpForm").innerHTML = `
-    <h3>We're at full capacity</h3>
-    <p class="rsvp-sub">Thank you for the love. We've reached the limit for the evening and are no longer able to take RSVPs.</p>`;
+    <h3>Thank you for the love!</h3>
+    <p class="rsvp-sub">Unfortunately, we've reached the limit for the evening and are no longer able to take RSVPs.</p>`;
 }
 rsvpIsFull().then(full => { if (full) closeRsvp(); });
   
