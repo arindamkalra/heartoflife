@@ -849,10 +849,12 @@ const CONFIG = {
   rsvpFormAction: "https://docs.google.com/forms/d/e/1FAIpQLSf1o6zfIfKWQR6_CE9dDMGa0ZSrF3DZsReyxpgbT_HJxtbpng/formResponse",
   rsvpEntryName: "entry.1613439727",
   rsvpEntryContact: "entry.230755771",// "Phone number"
-  rsvpEntryEmail: "entry.598024265",
+  rsvpEntryEmail: "entry.598024265", // "Email"
   rsvpEntryAttending: "entry.605324899", // "Attending?"
   // Must match the Google Form's multiple-choice options exactly
   rsvpAnswers: { yes: "Yes", no: "No" },
+  rsvpLimit: 5,
+  rsvpCountCsvUrl: "https://docs.google.com/spreadsheets/d/15YiFofAz-b19d5grBWgIEFH6xn2PCbFP4qlLhAtXpUs/gviz/tq?tqx=out:csv&range=A2",
 };
 
 /* Sample memories shown only until memoriesCsvUrl is set (for previewing the layout) */
@@ -1216,6 +1218,22 @@ document.getElementById("memoryForm").addEventListener("submit", async (e) => {
 /* ==========================================================================
    RSVP
    ========================================================================== */
+
+async function rsvpIsFull() {
+  if (!CONFIG.rsvpCountCsvUrl) return false;
+  try {
+    const res = await fetch(CONFIG.rsvpCountCsvUrl + "&t=" + Date.now());
+    const nums = (await res.text()).match(/\d+/g);
+    return nums ? Number(nums[nums.length - 1]) >= CONFIG.rsvpLimit : false;
+  } catch (err) { return false; }
+}
+function closeRsvp() {
+  document.getElementById("rsvpForm").innerHTML = `
+    <h3>We're at full capacity</h3>
+    <p class="rsvp-sub">Thank you for the love. We've reached the limit for the evening and are no longer able to take RSVPs.</p>`;
+}
+rsvpIsFull().then(full => { if (full) closeRsvp(); });
+  
 document.getElementById("rsvpForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const form = e.target;
@@ -1230,6 +1248,7 @@ document.getElementById("rsvpForm").addEventListener("submit", async (e) => {
     return;
   }
   const answer = choice.value;
+  if (answer === "yes" && await rsvpIsFull()) { closeRsvp(); return; }
   const thanks = answer === "yes"
     ? "Thank you, " + name + ". We look forward to seeing you on 11 December."
     : "Thank you for letting us know, " + name + ". You'll be with us in spirit.";
