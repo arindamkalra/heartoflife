@@ -1221,11 +1221,11 @@ document.getElementById("rsvpForm").addEventListener("submit", async (e) => {
   const form = e.target;
   const msg = document.getElementById("rsvpMsg");
   const btn = form.querySelector(".submit");
-  const name = form.name.value.trim(), contact = form.contact.value.trim();
+  const name = form.name.value.trim(), contact = form.contact.value.trim(), email = form.email.value.trim();
   const choice = form.querySelector('input[name="attending"]:checked');
 
   if (!name || !contact || !email || !form.email.checkValidity() || !choice) {
-    msg.textContent = "Please add your name, a phone number, and whether you'll attend.";
+    msg.textContent = "Please add your name, phone number, a valid email address, and whether you'll attend.";
     msg.classList.add("show");
     return;
   }
